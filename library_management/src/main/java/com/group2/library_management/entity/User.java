@@ -65,6 +65,11 @@ public class User extends Auditable implements UserDetails {
         RoleType roleType = RoleType.fromValue(this.role);
         return List.of(new SimpleGrantedAuthority(roleType.getAuthority()));
     }
+    
+    public String getRoleString() {
+        RoleType roleType = RoleType.fromValue(this.role);
+        return roleType.getAuthority();
+    }
 
     @Override
     public String getUsername() {
