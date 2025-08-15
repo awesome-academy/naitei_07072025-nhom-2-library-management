@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/admin_layout}">
+
+<head>
+    <title>Chi Tiết Phiếu Mượn</title>
+    <th:block layout:fragment="css">
+        <link th:href="@{/css/borrow-receipt-detail.css}" rel="stylesheet">
+    </th:block>
+</head>
+
+<body>
+<div layout:fragment="content">
+
+    <!-- 1. Hiển thị phần Header -->
+    <div th:replace="~{admin/borrowing/fragments/_header_panel :: headerPanel(${receipt})}"></div>
+
+    <!-- 2. Hiển thị phần Thông tin chung & Người mượn -->
+    <div th:replace="~{admin/borrowing/fragments/_info_panel :: infoPanel(${receipt})}"></div>
+
+    <!-- 3. Hiển thị Bảng danh sách sách -->
+    <div th:replace="~{admin/borrowing/fragments/_book_list_panel :: bookListPanel(${receipt})}"></div>
+
+    <!-- 4. Hiển thị các nút Hành động & Quay lại -->
+    <div th:replace="~{admin/borrowing/fragments/_action_panel :: actionPanel(${receipt})}"></div>
+
+</div>
+</body>
+</html>
