@@ -7,9 +7,11 @@ import com.group2.library_management.entity.RefreshToken;
 import com.group2.library_management.entity.User;
 import com.group2.library_management.entity.enums.RoleType;
 import com.group2.library_management.entity.enums.UserStatus;
+import com.group2.library_management.exception.AlreadyLoggedOutException;
 import com.group2.library_management.exception.EmailAlreadyExistsException;
 import com.group2.library_management.exception.RefreshTokenExpiredException;
 import com.group2.library_management.exception.RefreshTokenNotFoundException;
+import com.group2.library_management.exception.UserNotFoundException;
 import com.group2.library_management.mapper.UserMapper;
 import com.group2.library_management.repository.RefreshTokenRepository;
 import com.group2.library_management.repository.UserRepository;
@@ -31,7 +33,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -107,5 +109,27 @@ public class AuthServiceImpl implements AuthService {
                     return new TokenRefreshResponse(newAccessToken, newRefreshToken.getToken());
                 })
                 .orElseThrow(RefreshTokenNotFoundException::new);
+    }
+
+    @Override
+    public void logout() {
+        // Lấy thông tin xác thực của người dùng hiện tại
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return;
+        }
+
+        Jwt jwtPrincipal = (Jwt) authentication.getPrincipal();
+        String email = jwtPrincipal.getSubject();
+        User user = userRepository.findByEmail(email).orElseThrow(UserNotFoundException::new);
+        
+        int deletedCount = refreshTokenService.deleteByUser(user);
+
+        // Nếu không có bản ghi nào bị xóa, nghĩa là người dùng đã logout rồi
+        // hoặc không có refresh token tương ứng trong database để xóa.
+        if (deletedCount == 0) {
+            throw new AlreadyLoggedOutException();
+        }
     }
 }
